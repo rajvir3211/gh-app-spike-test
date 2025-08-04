@@ -1,0 +1,96 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wallet Transaction Checker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    h2 {
+      color: #e60000;
+    }
+    input {
+      padding: 8px;
+      width: 250px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #e60000;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔍 Wallet Transaction Checker</h2>
+  <input type="text" id="walletInput" placeholder="Enter Wallet Number" />
+  <button onclick="searchWallet()">Search</button>
+
+  <table id="resultTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Trnx Time</th>
+        <th>Trnx Code</th>
+        <th>Trnx Name</th>
+        <th>From Wallet</th>
+        <th>To Wallet</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <script>
+    const SHEET_ID = "YOUR_SHEET_ID"; // <-- এখানে আপনার Google Sheet ID বসান
+    const SHEET_NAME = "Sheet1"; // শীটের নাম (প্রয়োজনে বদলান)
+    const API_URL = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
+
+    async function searchWallet() {
+      const wallet = document.getElementById("walletInput").value.trim();
+      const res = await fetch(API_URL);
+      const data = await res.json();
+
+      const filtered = data.filter(row =>
+        row.FromWallet === wallet || row.ToWallet === wallet
+      );
+
+      const tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        alert("No transactions found!");
+        return;
+      }
+
+      document.getElementById("resultTable").style.display = "table";
+
+      filtered.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.TrnxTime}</td>
+          <td>${row.TrnxCode}</td>
+          <td>${row.TrnxName}</td>
+          <td>${row.FromWallet}</td>
+          <td>${row.ToWallet}</td>
+          <td>${row.Amount}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
